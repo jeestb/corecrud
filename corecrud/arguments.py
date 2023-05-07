@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Sequence
+from typing import Any, Callable, Optional
 
-from corecrud.typing import DictStrAny
+from corecrud.typing import DictStrAny, TupleAny
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.sql.base import ExecutableOption, _NoArg  # noqa: W0212
 from sqlalchemy.sql.dml import Insert as StandardInsert
 
 
-def _build(main: Any, method: str, args: Sequence[Any], kwargs: DictStrAny) -> Any:
+def _build(main: Any, method: str, args: TupleAny, kwargs: DictStrAny) -> Any:
     return getattr(main, method)(*args, **kwargs)
 
 
@@ -29,7 +29,7 @@ class Main:
     def __init__(self, method: Any, *args: Any, **kwargs: Any) -> None:
         self.method = method
 
-        self.args = filter(None, args)  # type: ignore[var-annotated]
+        self.args = args
         self.kwargs = kwargs
 
     def main(self) -> Any:
@@ -72,7 +72,7 @@ class Argument:
         :param kwargs: kwargs in method.
         """
 
-        self.args = filter(None, args)  # type: ignore[var-annotated]
+        self.args = args
         self.kwargs = kwargs
 
     def query(self, main: Any) -> Any:
