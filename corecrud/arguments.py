@@ -29,7 +29,7 @@ class Main:
     def __init__(self, method: Any, *args: Any, **kwargs: Any) -> None:
         self.method = method
 
-        self.args = args
+        self.args = filter(None, args)
         self.kwargs = kwargs
 
     def main(self) -> Any:

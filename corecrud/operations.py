@@ -303,6 +303,8 @@ class CRUD(Generic[ModelT]):
         update: Type[Update[ModelT]] = Update,
         delete: Type[Delete[ModelT]] = Delete,
     ) -> None:
+        self.model = model
+
         self.select = select(model=model, cursor_cls=cursor_cls)
         self.insert = insert(model=model, cursor_cls=cursor_cls)
         self.update = update(model=model, cursor_cls=cursor_cls)
