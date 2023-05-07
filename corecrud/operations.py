@@ -63,10 +63,12 @@ class CRUDOperation(abc.ABC, Generic[ModelT]):
 class SelectQuery(_ABCQuery[ModelT]):
     def build(
         self,
-        nested_select: Optional[Sequence[Any]] = None,
         *arguments: Argument,
+        nested_select: Optional[Sequence[Any]] = None,
     ) -> Any:
-        collector = Collector(SelectMain(self.model))
+        nested_select = [] if not nested_select else nested_select
+
+        collector = Collector(SelectMain(self.model, *nested_select))
         return collector.build(*arguments)
 
 
@@ -76,11 +78,11 @@ class SelectExecutor(_Executor[ModelT], Generic[ModelT]):
 
     async def execute(
         self,
+        *arguments: Argument,
         session: AsyncSession,
         nested_select: Optional[Sequence[Any]] = None,
-        *arguments: Argument,
     ) -> AsyncResult[Any]:
-        return await session.stream(self.query.build(nested_select=nested_select, *arguments))
+        return await session.stream(self.query.build(*arguments, nested_select=nested_select))
 
 
 class Select(CRUDOperation[ModelT]):
@@ -97,36 +99,40 @@ class Select(CRUDOperation[ModelT]):
 
     async def one(
         self,
+        *arguments: Argument,
         session: AsyncSession,
         nested_select: Optional[Sequence[Any]] = None,
-        *arguments: Argument,
     ) -> Optional[ModelT]:
-        return await super(Select, self).one(session, nested_select=nested_select, *arguments)
+        return await super(Select, self).one(
+            *arguments, session=session, nested_select=nested_select
+        )
 
     async def many(
         self,
+        *arguments: Argument,
         session: AsyncSession,
         nested_select: Optional[Sequence[Any]] = None,
-        *arguments: Argument,
     ) -> Sequence[ModelT]:
-        return await super(Select, self).many(session, nested_select=nested_select, *arguments)
+        return await super(Select, self).many(
+            *arguments, session=session, nested_select=nested_select
+        )
 
     async def many_unique(
         self,
+        *arguments: Argument,
         session: AsyncSession,
         nested_select: Optional[Sequence[Any]] = None,
-        *arguments: Argument,
     ) -> Sequence[ModelT]:
         return await super(Select, self).many_unique(
-            session, nested_select=nested_select, *arguments
+            *arguments, session=session, nested_select=nested_select
         )
 
 
 class InsertQuery(_ABCQuery[ModelT]):
     def build(
         self,
-        dialect: Any = insert,
         *arguments: Argument,
+        dialect: Any = insert,
     ) -> Any:
         collector = Collector(InsertMain(self.model, dialect=dialect))
         return collector.build(*arguments)
@@ -138,11 +144,11 @@ class InsertExecutor(_Executor[ModelT], Generic[ModelT]):
 
     async def execute(
         self,
+        *arguments: Argument,
         session: AsyncSession,
         dialect: Any = insert,
-        *arguments: Argument,
     ) -> AsyncResult[Any]:
-        return await session.stream(self.query.build(dialect=dialect, *arguments))
+        return await session.stream(self.query.build(*arguments, dialect=dialect))
 
 
 class Insert(CRUDOperation[ModelT]):
@@ -159,34 +165,31 @@ class Insert(CRUDOperation[ModelT]):
 
     async def one(
         self,
+        *arguments: Argument,
         session: AsyncSession,
         dialect: Any = insert,
-        *arguments: Argument,
     ) -> Optional[ModelT]:
-        return await super(Insert, self).one(session, dialect=dialect, *arguments)
+        return await super(Insert, self).one(*arguments, session=session, dialect=dialect)
 
     async def many(
         self,
+        *arguments: Argument,
         session: AsyncSession,
         dialect: Any = insert,
-        *arguments: Argument,
     ) -> Sequence[ModelT]:
-        return await super(Insert, self).many(session, dialect=dialect, *arguments)
+        return await super(Insert, self).many(*arguments, session=session, dialect=dialect)
 
     async def many_unique(
         self,
+        *arguments: Argument,
         session: AsyncSession,
         dialect: Any = insert,
-        *arguments: Argument,
     ) -> Sequence[ModelT]:
-        return await super(Insert, self).many_unique(session, dialect=dialect, *arguments)
+        return await super(Insert, self).many_unique(*arguments, session=session, dialect=dialect)
 
 
 class UpdateQuery(_ABCQuery[ModelT]):
-    def build(
-        self,
-        *arguments: Argument,
-    ) -> Any:
+    def build(self, *arguments: Argument) -> Any:
         collector = Collector(UpdateMain(self.model))
         return collector.build(*arguments)
 
@@ -197,8 +200,8 @@ class UpdateExecutor(_Executor[ModelT], Generic[ModelT]):
 
     async def execute(
         self,
-        session: AsyncSession,
         *arguments: Argument,
+        session: AsyncSession,
     ) -> AsyncResult[Any]:
         return await session.stream(self.query.build(*arguments))
 
@@ -217,24 +220,24 @@ class Update(CRUDOperation[ModelT]):
 
     async def one(
         self,
-        session: AsyncSession,
         *arguments: Argument,
+        session: AsyncSession,
     ) -> Optional[ModelT]:
-        return await super(Update, self).one(session, *arguments)
+        return await super(Update, self).one(*arguments, session=session)
 
     async def many(
         self,
-        session: AsyncSession,
         *arguments: Argument,
+        session: AsyncSession,
     ) -> Sequence[ModelT]:
-        return await super(Update, self).many(session, *arguments)
+        return await super(Update, self).many(*arguments, session=session)
 
     async def many_unique(
         self,
-        session: AsyncSession,
         *arguments: Argument,
+        session: AsyncSession,
     ) -> Sequence[ModelT]:
-        return await super(Update, self).many_unique(session, *arguments)
+        return await super(Update, self).many_unique(*arguments, session=session)
 
 
 class DeleteQuery(_ABCQuery[ModelT]):
@@ -249,8 +252,8 @@ class DeleteExecutor(_Executor[ModelT], Generic[ModelT]):
 
     async def execute(
         self,
-        session: AsyncSession,
         *arguments: Argument,
+        session: AsyncSession,
     ) -> AsyncResult[Any]:
         return await session.stream(self.query.build(*arguments))
 
@@ -269,24 +272,24 @@ class Delete(CRUDOperation[ModelT]):
 
     async def one(
         self,
-        session: AsyncSession,
         *arguments: Argument,
+        session: AsyncSession,
     ) -> Optional[ModelT]:
-        return await super(Delete, self).one(session, *arguments)
+        return await super(Delete, self).one(*arguments, session=session)
 
     async def many(
         self,
-        session: AsyncSession,
         *arguments: Argument,
+        session: AsyncSession,
     ) -> Sequence[ModelT]:
-        return await super(Delete, self).many(session, *arguments)
+        return await super(Delete, self).many(*arguments, session=session)
 
     async def many_unique(
         self,
-        session: AsyncSession,
         *arguments: Argument,
+        session: AsyncSession,
     ) -> Sequence[ModelT]:
-        return await super(Delete, self).many_unique(session, *arguments)
+        return await super(Delete, self).many_unique(*arguments, session=session)
 
 
 class CRUD(Generic[ModelT]):
