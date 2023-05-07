@@ -1,23 +1,27 @@
-from corecrud.arguments import Argument, Correlate
-from corecrud.arguments import Delete as DeleteMain
-from corecrud.arguments import Filter, GroupBy, Having
-from corecrud.arguments import Insert as InsertMain
-from corecrud.arguments import (
+from .arguments import (
+    Argument,
+    Correlate,
+    Filter,
+    GroupBy,
+    Having,
     Join,
     Limit,
-    Main,
     Offset,
     Options,
     OrderBy,
     OuterJoin,
     Returning,
+    SelectFrom,
+    Values,
+    Where,
 )
-from corecrud.arguments import Select as SelectMain
-from corecrud.arguments import SelectFrom
-from corecrud.arguments import Update as UpdateMain
-from corecrud.arguments import Values, Where
-from corecrud.cursors import ABCCursor, Mappings, Scalars
-from corecrud.operations import (
+from .cursors import ABCCursor, Mappings, Scalars
+from .main import Delete as DeleteMain
+from .main import Insert as InsertMain
+from .main import Main
+from .main import Select as SelectMain
+from .main import Update as UpdateMain
+from .operations import (
     CRUD,
     CRUDOperation,
     Delete,
@@ -34,7 +38,7 @@ from corecrud.operations import (
     UpdateQuery,
 )
 
-__version__ = "0.1.4.1"
+__version__ = "0.1.4.2"
 __all__ = (
     "ABCCursor",
     "Argument",

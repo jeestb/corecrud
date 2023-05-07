@@ -1,64 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 
-from corecrud.typing import DictStrAny, TupleAny
-from sqlalchemy import delete, insert, select, update
-from sqlalchemy.sql.base import ExecutableOption, _NoArg  # noqa: W0212
-from sqlalchemy.sql.dml import Insert as StandardInsert
-
-
-def _build(main: Any, method: str, args: TupleAny, kwargs: DictStrAny) -> Any:
-    return getattr(main, method)(*args, **kwargs)
-
-
-class Collector:
-    def __init__(self, query: Main) -> None:
-        self.query = query
-
-    def build(self, *arguments: Any) -> Any:
-        query = self.query.main()
-
-        for argument in arguments:
-            query = argument.query(query)
-
-        return query
-
-
-class Main:
-    def __init__(self, method: Any, *args: Any, **kwargs: Any) -> None:
-        self.method = method
-
-        self.args = (i for i in args if i is not None)
-        self.kwargs = kwargs
-
-    def main(self) -> Any:
-        return self.method(*self.args, **self.kwargs)
-
-
-class Select(Main):
-    def __init__(self, *entities: Any) -> None:
-        super(Select, self).__init__(select, *entities)
-
-
-class Insert(Main):
-    def __init__(
-        self,
-        table: Any,
-        *,
-        dialect: Callable[..., StandardInsert] = insert,
-    ) -> None:
-        super(Insert, self).__init__(dialect, table)
-
-
-class Update(Main):
-    def __init__(self, table: Any) -> None:
-        super(Update, self).__init__(update, table)
-
-
-class Delete(Main):
-    def __init__(self, table: Any) -> None:
-        super(Delete, self).__init__(delete, table)
+from corecrud.utils import call_next
+from sqlalchemy.sql.base import ExecutableOption
 
 
 class Argument:
@@ -76,7 +21,7 @@ class Argument:
         self.kwargs = kwargs
 
     def query(self, main: Any) -> Any:
-        return _build(main, self.method, self.args, self.kwargs)  # type: ignore[arg-type]
+        return call_next(main, self.method, self.args, self.kwargs)  # type: ignore[arg-type]
 
 
 class Where(Argument):
@@ -154,7 +99,7 @@ class OrderBy(Argument):
 
     def __init__(
         self,
-        __first: Any = _NoArg.NO_ARG,
+        __first: Any = 0,
         *clauses: Any,
     ) -> None:
         super(OrderBy, self).__init__(__first, *clauses)
@@ -165,7 +110,7 @@ class GroupBy(Argument):
 
     def __init__(
         self,
-        __first: Any = _NoArg.NO_ARG,
+        __first: Any = 0,
         *clauses: Any,
     ) -> None:
         super(GroupBy, self).__init__(__first, *clauses)

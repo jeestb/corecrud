@@ -3,13 +3,13 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING, Any, Generic, Optional, Sequence, Type, TypeVar
 
-from corecrud.arguments import Collector
-from corecrud.arguments import Delete as DeleteMain
-from corecrud.arguments import Insert as InsertMain
-from corecrud.arguments import Select as SelectMain
-from corecrud.arguments import Update as UpdateMain
+from corecrud.collector import Collector
 from corecrud.cursors import Scalars
 from corecrud.cursors.abc import ABCCursor
+from corecrud.main import Delete as DeleteMain
+from corecrud.main import Insert as InsertMain
+from corecrud.main import Select as SelectMain
+from corecrud.main import Update as UpdateMain
 from sqlalchemy import insert
 from sqlalchemy.ext.asyncio import AsyncResult, AsyncSession
 
@@ -66,9 +66,9 @@ class SelectQuery(_ABCQuery[ModelT]):
         *arguments: Argument,
         nested_select: Optional[Sequence[Any]] = None,
     ) -> Any:
-        nested_select = [] if not nested_select else nested_select
-
-        collector = Collector(SelectMain(self.model, *nested_select))
+        collector = Collector(
+            SelectMain(self.model, *([] if not nested_select else nested_select))
+        )
         return collector.build(*arguments)
 
 
